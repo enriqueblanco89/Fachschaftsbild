@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Gemeinsame Sammlung für unser Fachschaftsbild" />
+    <title>Sammlung für unser Fachschaftsbild</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+    <style>
+      :root { --bg:#0b1020; --card:#121933; --muted:#9fb0ff; --fg:#ffffff; --ok:#55d37b; --accent:#7aa2ff; }
+      *{box-sizing:border-box}
+      body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,#0b1020,#0c142b);min-height:100vh;}
+      .wrap{max-width:760px;margin:0 auto;padding:24px}
+      .card{background:var(--card);color:var(--fg);border-radius:16px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+      h1{margin:0 0 8px;font-size:28px}
+      p.lead{margin:0 0 16px;color:var(--muted);line-height:1.5}
+      .row{display:grid;grid-template-columns:1fr;gap:12px}
+      .stat{background:rgba(255,255,255,.04);padding:12px;border-radius:12px;text-align:center}
+      .stat b{display:block;font-size:22px;margin-bottom:4px}
+      .muted{color:#b6c2ff;font-size:12px}
+      form{margin-top:18px;display:grid;gap:10px}
+      input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2c3766;background:#0f1530;color:#fff;font:inherit}
+      input::placeholder,textarea::placeholder{color:#8997ce}
+      button{padding:12px 16px;border:0;border-radius:12px;background:linear-gradient(90deg,#7aa2ff,#55d37b);color:#00122a;font-weight:700;cursor:pointer}
+      button:hover{filter:brightness(1.06)}
+      .note{font-size:12px;color:#9fb0ff;line-height:1.45}
+      .success{background:rgba(85,211,123,.12);border:1px solid rgba(85,211,123,.35);padding:10px;border-radius:12px;margin-top:10px;color:#d8ffe6}
+      .qr{display:flex;gap:14px;align-items:center;margin-top:8px}
+      .qr img{width:120px;height:120px;border-radius:10px;border:1px solid #2c3766}
+      @media (max-width:680px){.row{grid-template-columns:1fr}.qr{align-items:flex-start}}
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="card">
+        <h1>Gemeinsam für unser Fachschaftsbild</h1>
+        <p class="lead">Wir sammeln Geld für ein gemeinsames Fachschaftsbild. Unterstütze uns mit einem Betrag deiner Wahl – jeder Beitrag bringt uns dem Ziel ein Stück näher.</p>
+
+        <div id="stats">
+          <div class="row">
+            <div class="stat"><b id="total">–</b><span>Bisher gesammelt (CHF)</span></div>
+          </div>
+        </div>
+
+        <form id="pledgeForm">
+          <input type="text" id="name" placeholder="Dein Name (optional – nur für die Organisation sichtbar)" />
+          <input type="number" min="1" step="1" id="amount" placeholder="Dein Beitrag in CHF" required />
+          <textarea id="note" rows="2" maxlength="140" placeholder="Nachricht an die Fachschaft (optional – max. 140 Zeichen)"></textarea>
+          <button type="submit">Beitrag zusagen</button>
+          <div class="note">Hinweis: Nach deiner Zusage überweist du den Betrag per <b>TWINT</b> an <b>Enrique</b>. Auf dieser Seite werden dein zugesagter Betrag und optional dein Name gespeichert.</div>
+        </form>
+
+        <div id="after" style="display:none">
+          <div class="success">Vielen Dank! Dein Beitrag zum Fachschaftsbild wurde erfasst. Bitte überweise den Betrag jetzt per TWINT.</div>
+          <div class="qr">
+            <img src="https://via.placeholder.com/240x240.png?text=TWINT+QR" alt="TWINT-QR-Code" />
+            <div>
+              <b>TWINT an:</b><br />
+              <div id="payto">Enrique</div>
+              <div class="muted">Verwendungszweck: Fachschaftsbild</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const API = "https://script.google.com/macros/s/AKfycbxwOnF0G4Ot8iuomL9AJMDeny8DixxZHLeMSCcftXfYD7h5h2oRLR8-e3DVbGGbXEE/exec";
+
+      async function loadStats(){
+        const r = await fetch(API + '?route=stats');
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'Fehler');
+        const { total } = j;
+        byId('total').textContent = toCHF(total);
+      }
+
+      function toCHF(n){
+        return (Number(n) || 0).toLocaleString('de-CH', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      function byId(id){ return document.getElementById(id); }
+
+      byId('pledgeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = Number(byId('amount').value);
+        const note = byId('note').value.trim();
+        const name = byId('name').value.trim();
+        if (!amount || amount <= 0){
+          alert('Bitte einen gültigen Betrag eingeben.');
+          return;
+        }
+
+        try{
+          const form = new URLSearchParams({ amount_chf: String(amount), note, name });
+          const r = await fetch(API + '?route=pledge', { method: 'POST', body: form });
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.error || 'Fehler');
+          byId('after').style.display = 'block';
+          byId('pledgeForm').reset();
+          await loadStats();
+          byId('after').scrollIntoView({ behavior: 'smooth' });
+        } catch(err){
+          alert('Fehler beim Senden: ' + err.message);
+        }
+      });
+
+      loadStats().catch(() => {});
+    </script>
+  </body>
+</html>
