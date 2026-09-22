@@ -28,9 +28,7 @@
       button:hover{filter:brightness(1.06)}
       .note{font-size:12px;color:#9fb0ff;line-height:1.45}
       .success{background:rgba(85,211,123,.12);border:1px solid rgba(85,211,123,.35);padding:10px;border-radius:12px;margin-top:10px;color:#d8ffe6}
-      .qr{display:flex;gap:14px;align-items:center;margin-top:8px}
-      .qr img{width:120px;height:120px;border-radius:10px;border:1px solid #2c3766}
-      @media (max-width:680px){.row{grid-template-columns:1fr}.qr{align-items:flex-start}}
+      @media (max-width:680px){.row{grid-template-columns:1fr}}
     </style>
   </head>
   <body>
@@ -55,15 +53,7 @@
         </form>
 
         <div id="after" style="display:none">
-          <div class="success">Vielen Dank! Dein Beitrag zum Fachschaftsbild wurde erfasst. Bitte überweise den Betrag jetzt per TWINT.</div>
-          <div class="qr">
-            <img src="https://via.placeholder.com/240x240.png?text=TWINT+QR" alt="TWINT-QR-Code" />
-            <div>
-              <b>TWINT an:</b><br />
-              <div id="payto">Enrique</div>
-              <div class="muted">Verwendungszweck: Fachschaftsbild</div>
-            </div>
-          </div>
+          <div class="success">Vielen Dank! Dein Beitrag zum Fachschaftsbild wurde erfasst.</div>
         </div>
       </section>
     </main>
